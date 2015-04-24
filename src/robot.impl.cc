@@ -288,6 +288,10 @@ namespace hpp
 	  joint =
 	    objectFactory_.createJointTranslation (posMatrix);
 	}
+    else if (jt == "rod") {
+      joint =
+        objectFactory_.createJointStaticRod (posMatrix);
+    }
 	else if (jt == "rotation") {
 	  throw hpp::Error ("joint type \"rotation\" is not supported anymore,"
 			    "please choose between \"bounded-rotation\" "
