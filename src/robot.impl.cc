@@ -146,7 +146,6 @@ namespace hpp
 	throw (hpp::Error)
       {
 	std::string robotName(inRobotName);
-	std::string jointName(inJointName);
 
 	// Check that robot of this name exists.
 	if (robotMap_.count (robotName) != 1) {
@@ -155,15 +154,8 @@ namespace hpp
 	  hppDout (error, oss.str ());
 	  throw hpp::Error (oss.str ().c_str ());
 	}
-	// Check that joint of this name exists.
-	if (jointMap_.count (jointName) != 1) {
-	  std::ostringstream oss ("joint ");
-	  oss << jointName << " does not exists.";
-	  hppDout (error, oss.str ());
-	  throw hpp::Error (oss.str ().c_str ());
-	}
 	DevicePtr_t robot = robotMap_ [robotName];
-	JointPtr_t joint = jointMap_ [jointName];
+	JointPtr_t joint = getJointByName (inJointName);
 
 	robot->rootJoint (joint);
       }
@@ -292,6 +284,14 @@ namespace hpp
       joint =
         objectFactory_.createJointStaticRod (posMatrix);
     }
+	else if (jt == "translation2") {
+	  joint =
+	    objectFactory_.createJointTranslation2 (posMatrix);
+	}
+	else if (jt == "translation3") {
+	  joint =
+	    objectFactory_.createJointTranslation3 (posMatrix);
+	}
 	else if (jt == "rotation") {
 	  throw hpp::Error ("joint type \"rotation\" is not supported anymore,"
 			    "please choose between \"bounded-rotation\" "
@@ -307,6 +307,7 @@ namespace hpp
 	// Bound joint if needed.
 	localSetJointBounds(joint, jointBounds);
 	BodyPtr_t body = objectFactory_.createBody ();
+	body->name (jn);
 	joint->setLinkedBody (body);
 	// Store joint in jointMap_.
 	jointMap_[jn] = joint;
@@ -319,20 +320,8 @@ namespace hpp
 			    const char* inChildName)
 	throw (hpp::Error)
       {
-	// Check that joint of this name exists.
-	if (jointMap_.count(inParentName) != 1) {
-	  std::ostringstream oss ("joint ");
-	  oss << inParentName << " does not exist.";
-	  throw hpp::Error (oss.str ().c_str ());
-	}
-	// Check that joint of this name does not already exist.
-	if (jointMap_.count(inChildName) != 1) {
-	  std::ostringstream oss ("joint ");
-	  oss << inChildName << " does not exist.";
-	  throw hpp::Error (oss.str ().c_str ());
-	}
-	JointPtr_t parentJoint = jointMap_ [inParentName];
-	JointPtr_t childJoint = jointMap_ [inChildName];
+	JointPtr_t parentJoint = getJointByName (inParentName);
+	JointPtr_t childJoint = getJointByName (inChildName);
 	parentJoint->addChildJoint (childJoint);
       }
 
@@ -1045,6 +1034,23 @@ namespace hpp
 
       // --------------------------------------------------------------------
 
+      JointPtr_t Robot::getJointByName (const char* name)
+      {
+	JointMap_t::const_iterator it = jointMap_.find (std::string (name));
+	if (it != jointMap_.end ()) {
+	  return it->second;
+	}
+	const DevicePtr_t robot (problemSolver_->robot ());
+	if (robot) {
+	  return robot->getJointByName (std::string (name));
+	}
+	std::string msg1 ("No robot is loaded and no joint with name ");
+	std::string msg2 (" stored in local map");
+	throw Error ((msg1 + std::string (name) + msg2).c_str ());
+      }
+
+      // --------------------------------------------------------------------
+
       void Robot::getObjectPosition (const char* objectName, Double* cfg)
 	throw (hpp::Error)
       {
@@ -1306,7 +1312,7 @@ namespace hpp
 	throw (hpp::Error)
       {
 	try {
-	  JointPtr_t joint = jointMap_ [jointName];
+	  JointPtr_t joint = getJointByName (jointName);
 	  CollisionGeometryPtr_t geometry;
 	  // Check that polyhedron exists.
 	  VertexMap_t::const_iterator itVertex = vertexMap_.find(objectName);
