@@ -104,6 +104,10 @@ namespace hpp
           throw (hpp::Error);
         virtual void jointIntegrate(const char* jointName, const floatSeq& dq)
           throw (hpp::Error);
+
+        virtual floatSeq* jointInterpolate(const char* jointName, const hpp::floatSeq& q1_corba, const hpp::floatSeq& q2_corba,Double u)
+          throw (hpp::Error);
+
 	virtual Transform__slice* getJointPosition(const char* jointName)
 	  throw (hpp::Error);
 	virtual floatSeq* getComPosition() throw (hpp::Error);

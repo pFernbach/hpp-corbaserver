@@ -91,6 +91,8 @@ module hpp
 
     void jointIntegrate(in string jointName, in floatSeq speed) raises (Error);
 
+    floatSeq jointInterpolate(in string jointName, in floatSeq q1,in floatSeq q2,in double u) raises (Error);
+
     /// Get COM position
     /// \throw Error if robot is not set
     floatSeq getComPosition () raises (Error);
