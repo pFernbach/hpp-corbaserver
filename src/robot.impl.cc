@@ -608,11 +608,42 @@ namespace hpp
               q1[i] = (q1_corba)[i];
               q2[i] = (q2_corba)[i];
             }
-          std::cout<<"Q1 interpolate : "<<q1[0]<<","<<q1[1]<<","<<q1[2]<<","<<q1[3]<<","<<q1[4]<<","<<q1[5]<<std::endl;
-          std::cout<<"Q2 interpolate : "<<q2[0]<<","<<q2[1]<<","<<q2[2]<<","<<q2[3]<<","<<q2[4]<<","<<q2[5]<<std::endl;
           joint->configuration ()->interpolate (q1,q2,u,ric,config);
           hpp::floatSeq* config_corba = new hpp::floatSeq();
           config_corba->length(q1_corba.length());
+          for(ULong i = 0 ; i < q1_corba.length(); i ++){
+              (*config_corba)[i] = config[i];
+            }
+          return config_corba;
+        } catch (const std::exception& exc) {
+          throw hpp::Error (exc.what ());
+        }
+      }
+
+      floatSeq* Robot::configInterpolate(const hpp::floatSeq& q1_corba, const hpp::floatSeq& q2_corba,Double u)
+        throw (hpp::Error)
+      {
+        try {
+          if(q1_corba.length() != q2_corba.length()) throw Error ("Dimension of configuration vector are different");
+          if(u<0 || u >1) throw Error ("U must be between 0 and 1 ");
+
+          // Get robot in hppPlanner object.
+          DevicePtr_t robot = problemSolver_->robot ();
+          Configuration_t config = Configuration_t(q1_corba.length());
+          Configuration_t q1 = Configuration_t(q1_corba.length());
+          Configuration_t q2 = Configuration_t(q2_corba.length());
+          hpp::floatSeq* config_corba = new hpp::floatSeq();
+          config_corba->length(q1_corba.length());
+          for(ULong i = 0 ; i < q1_corba.length(); i ++){
+              q1[i] = (q1_corba)[i];
+              q2[i] = (q2_corba)[i];
+            }
+          if (!robot) throw hpp::Error ("No robot in problem solver.");
+          for(std::vector <JointPtr_t>::const_iterator itJoint = robot->getJointVector().begin (); itJoint != robot->getJointVector().end (); ++itJoint){
+          //JointPtr_t joint = robot->getJointByName (jointName);
+              size_t ric = (*itJoint)->rankInConfiguration ();
+            (*itJoint)->configuration ()->interpolate (q1,q2,u,ric,config);
+          }
           for(ULong i = 0 ; i < q1_corba.length(); i ++){
               (*config_corba)[i] = config[i];
             }

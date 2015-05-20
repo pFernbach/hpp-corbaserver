@@ -93,6 +93,8 @@ module hpp
 
     floatSeq jointInterpolate(in string jointName, in floatSeq q1,in floatSeq q2,in double u) raises (Error);
 
+    floatSeq configInterpolate(in floatSeq q1,in floatSeq q2,in double u) raises (Error);
+
     /// Get COM position
     /// \throw Error if robot is not set
     floatSeq getComPosition () raises (Error);
