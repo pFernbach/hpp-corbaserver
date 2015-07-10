@@ -773,7 +773,7 @@ namespace hpp
       void Problem::finishSolveStepByStep () throw (hpp::Error)
       {
 	try {
-	  problemSolver_->solve();
+	  problemSolver_->finishSolveStepByStep();
 	} catch (const std::exception& exc) {
 	  throw hpp::Error (exc.what ());
 	}
